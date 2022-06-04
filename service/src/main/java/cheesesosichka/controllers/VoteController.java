@@ -3,7 +3,9 @@ package chessesosicka.vesdecodbackend.controllers;
 import chessesosicka.vesdecodbackend.util.IntervalManager;
 import chessesosicka.vesdecodbackend.data.Vote;
 import io.github.bucket4j.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +19,9 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/votes")
 public class VoteController {
-    @Value("${bucket.limit}")
+    @Value("${BUCKET_LIMITS}")
     private Long BUCKET_LIMITS;
-    @Value("${bucket.refill}")
+    @Value("${BUCKET_REFILL}")
     private Long BUCKET_REFILL;
     private Long oldestVote;
     private Long newestVote;
@@ -27,7 +29,7 @@ public class VoteController {
     private final Map<String, Bucket> buckets = new HashMap<>();
     private final Map<String, ArrayList<Long>> artistsStats = new HashMap<>();
 
-    VoteController(@Value("${artists}") String[] artists) {
+    VoteController(@Value("${ARTISTS}") String[] artists) {
         for (var artist : artists) {
             artistsStats.put(artist, new ArrayList<>());
         }
@@ -75,7 +77,7 @@ public class VoteController {
     }
 
     @GetMapping(value = "/stats", produces = "application/json")
-    public Map<String, Object> doStat(@RequestParam(value = "from", defaultValue = "-1") Long from,
+    public Map<String, Object> doStats(@RequestParam(value = "from", defaultValue = "-1") Long from,
                                       @RequestParam(value = "to", defaultValue = "-1") Long to,
                                       final @RequestParam(value = "intervals", defaultValue = "10") long intervals,
                                       final @RequestParam(value = "artists", defaultValue = "") String artists) {

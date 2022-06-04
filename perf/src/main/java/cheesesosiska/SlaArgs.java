@@ -11,8 +11,6 @@ public class SlaArgs {
     private Integer requests;
     @Parameter(description = "Service address", required = true)
     private String url;
-    @Parameter(names = {"-a"}, variableArity = true, required = true)
-    private List<String> artists;
 
     public Integer getUsers() {
         return users;
@@ -26,7 +24,4 @@ public class SlaArgs {
         return url;
     }
 
-    public List<String> getArtists() {
-        return artists;
-    }
 }

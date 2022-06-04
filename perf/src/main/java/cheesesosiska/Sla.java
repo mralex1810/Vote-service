@@ -20,13 +20,13 @@ public class Sla {
     public static void main(String[] args) throws URISyntaxException, InterruptedException, ExecutionException {
         SlaArgs jArgs = getSlaArgs(args);
 
-        String[] artists = jArgs.getArtists().toArray(new String[0]);
+        String[] artists = System.getenv("ARTISTS").split(",");
         URI url = new URI("http://" + jArgs.getUrl() + "/votes");
         int requests = jArgs.getRequests();
         int users = jArgs.getUsers();
 
         ExecutorService service = Executors.newFixedThreadPool(users);
-        prepareService(artists, url, users, service);
+//        prepareService(artists, url, users, service);
 
         double start = System.currentTimeMillis();
         List<Future<RequestResult>> results = executeCalls(artists, url, requests, service);
@@ -86,11 +86,11 @@ public class Sla {
         return results;
     }
 
-    private static void prepareService(String[] artists, URI url, int users, ExecutorService service) throws URISyntaxException {
-        for (int i = 0; i < users; i++) {
-            service.submit(new Request(i, artists[i % artists.length], url));
-        }
-    }
+//    private static void prepareService(String[] artists, URI url, int users, ExecutorService service) throws URISyntaxException {
+//        for (int i = 0; i < users; i++) {
+//            service.submit(new Request(i, artists[i % artists.length], url));
+//        }
+//    }
 
     private static SlaArgs getSlaArgs(String[] args) {
         SlaArgs jArgs = new SlaArgs();
