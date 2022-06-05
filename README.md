@@ -33,7 +33,7 @@
 Интерфейс комнадной строки соответствует заданию.
 Пример запуска на Linux:
 
-`ARTISTS=a,b java -jar target/service-perf-1.0.jar -n 1000 -c 10 localhost:8080`
+`ARTISTS=a,b java -jar service-perf-1.0.jar -n 1000 -c 10 localhost:8080`
 
 ## Запуск балансировщика
 В качестве переменных балансировщик ожидает:
