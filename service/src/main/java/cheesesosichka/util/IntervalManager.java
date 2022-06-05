@@ -19,8 +19,9 @@ public class IntervalManager {
         if (interval == intervals - 1) {
             return new long[]{from + interval * delay(), to};
         }
-        return new long[]{from + interval * delay(),from+ (interval + 1) * delay()};
+        return new long[]{from + interval * delay(), from + (interval + 1) * delay()};
     }
+
     public long countIntervals() {
         return intervals;
     }

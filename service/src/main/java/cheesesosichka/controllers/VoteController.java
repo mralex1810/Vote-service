@@ -1,11 +1,9 @@
-package chessesosicka.vesdecodbackend.controllers;
+package cheesesosichka.controllers;
 
-import chessesosicka.vesdecodbackend.util.IntervalManager;
 import chessesosicka.vesdecodbackend.data.Vote;
+import chessesosicka.vesdecodbackend.util.IntervalManager;
 import io.github.bucket4j.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +18,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/votes")
 public class VoteController {
     @Value("${BUCKET_LIMITS}")
-    private Long BUCKCET_LIMITS;
+    private Long BUCKET_LIMITS;
     @Value("${BUCKET_REFILL}")
     private Long BUCKET_REFILL;
     private Long oldestVote;
@@ -68,7 +66,7 @@ public class VoteController {
     public Map<String, Object> doGet() {
         Map<String, Object> data = new HashMap<>();
         ArrayList<Map<String, Object>> info = new ArrayList<>();
-        for (var entity : artistsStats.entr ySet()) {
+        for (var entity : artistsStats.entrySet()) {
             info.add(Map.of("name", entity.getKey(),
                     "votes", entity.getValue().size()));
         }
@@ -78,9 +76,9 @@ public class VoteController {
 
     @GetMapping(value = "/stats", produces = "application/json")
     public Map<String, Object> doStats(@RequestParam(value = "from", defaultValue = "-1") Long from,
-                                      @RequestParam(value = "to", defaultValue = "-1") Long to,
-                                      final @RequestParam(value = "intervals", defaultValue = "10") long intervals,
-                                      final @RequestParam(value = "artists", defaultValue = "") String artists) {
+                                       @RequestParam(value = "to", defaultValue = "-1") Long to,
+                                       final @RequestParam(value = "intervals", defaultValue = "10") long intervals,
+                                       final @RequestParam(value = "artists", defaultValue = "") String artists) {
         String[] artistsNames;
         if (artists.length() > 0) {
             artistsNames = artists.split(",");

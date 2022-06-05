@@ -1,7 +1,6 @@
 package cheesesosiska;
 
 import com.beust.jcommander.JCommander;
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,27 +16,39 @@ public class Sla {
 
     private static final List<Integer> PROCENTILES = List.of(10, 25, 50, 75, 90, 95, 99);
 
-    public static void main(String[] args) throws URISyntaxException, InterruptedException, ExecutionException {
+    public static void main(String[] args) {
         SlaArgs jArgs = getSlaArgs(args);
 
         String[] artists = System.getenv("ARTISTS").split(",");
-        URI url = new URI("http://" + jArgs.getUrl() + "/votes");
+        URI url;
+        try {
+            url = new URI("http://" + jArgs.getUrl() + "/votes");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Bad URI for: " + jArgs.getUrl(), e);
+        }
         int requests = jArgs.getRequests();
         int users = jArgs.getUsers();
+        if (requests == 0) throw new RuntimeException("-n must be > 0");
+        if (users == 0) throw new RuntimeException("-c must be > 0");
 
         ExecutorService service = Executors.newFixedThreadPool(users);
-//        prepareService(artists, url, users, service);
-
+        double totalTime;
+        List<Future<RequestResult>> results = null;
         double start = System.currentTimeMillis();
-        List<Future<RequestResult>> results = executeCalls(artists, url, requests, service);
-        double totalTime = (System.currentTimeMillis() - start) / 1000;
-        service.shutdown();
+        results = executeCalls(artists, url, requests, users);
+        totalTime = (System.currentTimeMillis() - start) / 1000;
+
         double[] times = new double[requests];
         int code200Counter = 0;
         int code400Counter = 0;
         double sumTime = 0;
         for (int i = 0; i < requests; i++) {
-            var res = results.get(i).get();
+            RequestResult res = null;
+            try {
+                res = results.get(i).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
             times[i] = res.time();
             sumTime += res.time();
             switch (res.code() / 100) {
@@ -48,7 +59,7 @@ public class Sla {
         Arrays.sort(times);
 
         printMainStat(requests, users, totalTime, times, sumTime);
-        printPercintile(times);
+        printPercentile(times);
         printStatusCodeDistribution(code200Counter, code400Counter);
     }
 
@@ -58,13 +69,15 @@ public class Sla {
         System.out.printf("[400] %d responses\n\n", code400Counter);
     }
 
-    private static void printPercintile(double[] times) {
+    private static void printPercentile(double[] times) {
         System.out.println("Latency distribution:\n");
-        Percentile percentile = new Percentile();
-        percentile.setData(times);
-        for (var c : PROCENTILES) {
-            System.out.printf(" %d %% in %5.4f secs\n\n", c, percentile.evaluate(c));
+        for (var perc : PROCENTILES) {
+            System.out.printf(" %d %% in %5.4f secs\n\n", perc, evaluatePercentile(times, perc));
         }
+    }
+
+    private static double evaluatePercentile(double[] sortedArr, int perc) {
+        return sortedArr[perc * (sortedArr.length - 1) / 100];
     }
 
     private static void printMainStat(int requests, int users, double totalTime, double[] times, double sumTime) {
@@ -78,19 +91,16 @@ public class Sla {
         System.out.printf(" Requests/sec: %.4f secs\n\n", requests / totalTime);
     }
 
-    private static List<Future<RequestResult>> executeCalls(String[] artists, URI url, int requests, ExecutorService service) throws URISyntaxException {
+    private static List<Future<RequestResult>> executeCalls(String[] artists, URI url, int requests, int users) {
+        ExecutorService service = Executors.newFixedThreadPool(users);
         List<Future<RequestResult>> results = new ArrayList<>(requests);
         for (int i = 0; i < requests; i++) {
             results.add(service.submit(new Request(i, artists[i % artists.length], url)));
         }
+        service.shutdown();
         return results;
     }
 
-//    private static void prepareService(String[] artists, URI url, int users, ExecutorService service) throws URISyntaxException {
-//        for (int i = 0; i < users; i++) {
-//            service.submit(new Request(i, artists[i % artists.length], url));
-//        }
-//    }
 
     private static SlaArgs getSlaArgs(String[] args) {
         SlaArgs jArgs = new SlaArgs();
