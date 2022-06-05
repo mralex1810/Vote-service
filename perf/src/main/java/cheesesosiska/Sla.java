@@ -31,19 +31,17 @@ public class Sla {
         if (requests == 0) throw new RuntimeException("-n must be > 0");
         if (users == 0) throw new RuntimeException("-c must be > 0");
 
-        ExecutorService service = Executors.newFixedThreadPool(users);
-        double totalTime;
-        List<Future<RequestResult>> results = null;
+        List<Future<MyRequestResult>> results = null;
         double start = System.currentTimeMillis();
         results = executeCalls(artists, url, requests, users);
-        totalTime = (System.currentTimeMillis() - start) / 1000;
+        double totalTime = (System.currentTimeMillis() - start) / 1000;
 
         double[] times = new double[requests];
         int code200Counter = 0;
         int code400Counter = 0;
         double sumTime = 0;
         for (int i = 0; i < requests; i++) {
-            RequestResult res = null;
+            MyRequestResult res = null;
             try {
                 res = results.get(i).get();
             } catch (InterruptedException | ExecutionException e) {
@@ -91,9 +89,9 @@ public class Sla {
         System.out.printf(" Requests/sec: %.4f secs\n\n", requests / totalTime);
     }
 
-    private static List<Future<RequestResult>> executeCalls(String[] artists, URI url, int requests, int users) {
+    private static List<Future<MyRequestResult>> executeCalls(String[] artists, URI url, int requests, int users) {
         ExecutorService service = Executors.newFixedThreadPool(users);
-        List<Future<RequestResult>> results = new ArrayList<>(requests);
+        List<Future<MyRequestResult>> results = new ArrayList<>(requests);
         for (int i = 0; i < requests; i++) {
             results.add(service.submit(new Request(i, artists[i % artists.length], url)));
         }

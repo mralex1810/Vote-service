@@ -1,4 +1,4 @@
-package chessesosicka.vesdecodbackend.util;
+package cheesesosichka.util;
 
 public class IntervalManager {
     final private long from;

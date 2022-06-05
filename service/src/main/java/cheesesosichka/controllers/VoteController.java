@@ -1,7 +1,7 @@
 package cheesesosichka.controllers;
 
-import chessesosicka.vesdecodbackend.data.Vote;
-import chessesosicka.vesdecodbackend.util.IntervalManager;
+import cheesesosichka.data.Vote;
+import cheesesosichka.util.IntervalManager;
 import io.github.bucket4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -145,6 +145,17 @@ public class VoteController {
         return response.header("x-ratelimit-limit", String.valueOf(BUCKET_LIMITS))
                 .header("x-ratelimit-remaining", String.valueOf(remaining))
                 .header("x-ratelimit-reset", String.valueOf(reset));
+    }
+
+    @GetMapping(value = "/oldest")
+    public ResponseEntity<String> getOldest() {
+        if (oldestVote == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(String.valueOf(oldestVote));
+    }
+    @GetMapping(value = "/newest")
+    public ResponseEntity<String> getNewest() {
+        if (newestVote == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(String.valueOf(newestVote));
     }
 
 }

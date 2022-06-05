@@ -9,7 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.Callable;
 
-public class Request implements Callable<RequestResult> {
+public class Request implements Callable<MyRequestResult> {
     HttpClient client;
     HttpRequest request;
     Request(final int index, final String artist, final URI uri) {
@@ -22,9 +22,9 @@ public class Request implements Callable<RequestResult> {
                 .build();
     }
     @Override
-    public RequestResult call() throws IOException, InterruptedException {
+    public MyRequestResult call() throws IOException, InterruptedException {
         double startTime = System.currentTimeMillis();
         HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
-        return new cheesesosiska.RequestResult(response.statusCode(), (System.currentTimeMillis() - startTime) / 1000);
+        return new MyRequestResult(response.statusCode(), (System.currentTimeMillis() - startTime) / 1000);
     }
 }

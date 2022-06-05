@@ -17,14 +17,15 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 @RestController()
 @RequestMapping("/votes")
 public class Balancer {
-    private Long oldestVote;
-    private Long newestVote;
     private final Predicate<String> PHONE_PREDICATE = Pattern.compile("9\\d{9}").asMatchPredicate();
 
     @Value("${SERVICES}")
@@ -37,7 +38,6 @@ public class Balancer {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         int serviceIndex = (int) (computeHash(vote.phone()) % services.length);
-        updateTime(System.currentTimeMillis());
         try {
             HttpRequest request = HttpRequest.newBuilder(new URI("http://" + services[serviceIndex] + "/votes"))
                     .setHeader("content-type", "application/json")
@@ -56,7 +56,6 @@ public class Balancer {
     public Map doGet() {
         Map getData = null;
         for (var service : services) {
-
             Map tmp;
             try {
                 HttpRequest request = HttpRequest.newBuilder(new URI("http://" + service + "/votes"))
@@ -94,10 +93,13 @@ public class Balancer {
                        @RequestParam(value = "to", defaultValue = "-1") Long to,
                        final @RequestParam(value = "intervals", defaultValue = "10") long intervals,
                        final @RequestParam(value = "artists", defaultValue = "") String artists) {
-        from = from == -1 ? oldestVote : from;
-        to = to == -1 ? newestVote : to;
-        if (from == null || to == null) {
-            return Map.of();
+        if (from == -1) {
+            from = getEst(Long.MAX_VALUE, Math::min, "oldest");
+            if (from == Long.MAX_VALUE) return Map.of();
+        }
+        if (to == -1) {
+            to = getEst(Long.MIN_VALUE, Math::max, "newest");
+            if (to == Long.MIN_VALUE) return Map.of();
         }
         Map statsData = null;
         for (var service : services) {
@@ -133,12 +135,21 @@ public class Balancer {
         return statsData;
     }
 
-
-    public void updateTime(long currentTime) {
-        if (oldestVote == null) {
-            oldestVote = currentTime;
+    private Long getEst(Long it, final BinaryOperator<Long> function, final String method ) {
+        for (var service : services) {
+            String req = String.format("http://%s/votes/" + method, service);
+            try {
+                HttpRequest request = HttpRequest.newBuilder(new URI(req)).GET().build();
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() != HttpStatus.OK.value()) continue;
+                it = function.apply(Long.parseLong(response.body()), it);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Bad service address: " + service);
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException("Something went wrong", e);
+            }
         }
-        newestVote = currentTime;
+        return it;
     }
 
     private long computeHash(String phone) {
