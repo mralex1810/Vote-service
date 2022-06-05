@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/votes")
 public class VoteController {
     @Value("${BUCKET_LIMITS}")
-    private Long BUCKET_LIMITS;
+    private Long BUCKCET_LIMITS;
     @Value("${BUCKET_REFILL}")
     private Long BUCKET_REFILL;
     private Long oldestVote;
@@ -68,7 +68,7 @@ public class VoteController {
     public Map<String, Object> doGet() {
         Map<String, Object> data = new HashMap<>();
         ArrayList<Map<String, Object>> info = new ArrayList<>();
-        for (var entity : artistsStats.entrySet()) {
+        for (var entity : artistsStats.entr ySet()) {
             info.add(Map.of("name", entity.getKey(),
                     "votes", entity.getValue().size()));
         }
