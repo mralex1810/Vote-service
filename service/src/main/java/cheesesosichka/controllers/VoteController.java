@@ -101,7 +101,7 @@ public class VoteController {
                 if (artistStat == null || artistStat.isEmpty()) {
                     continue;
                 }
-                votes += calculate(artistStat, interval[0], interval[1]);
+                votes += countPeriod(artistStat, interval[0], interval[1]);
             }
             data[i] = Map.of("start", interval[0],
                     "end", interval[1],
@@ -111,9 +111,12 @@ public class VoteController {
         return ans;
     }
 
-    private long calculate(List<Long> artistStat, long from, long to) {
+    private long countPeriod(List<Long> artistStat, long from, long to) {
         int startIndex = Collections.binarySearch(artistStat, from);
         int endIndex = Collections.binarySearch(artistStat, to);
+        while (startIndex >= 0 && artistStat.get(startIndex) == from) {
+            startIndex--;
+        }
         if (startIndex < 0) {
             startIndex = -startIndex - 1;
         }
