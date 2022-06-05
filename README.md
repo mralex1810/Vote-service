@@ -24,7 +24,7 @@
 
 Пример запуска на Linux:
 
-`ARTISTS=a,b SERVER_PORT=8080 SERVER_ADDRESS=localhost BUCKET_LIMITS=100 BUCKET_REFILL=1000000 java -jar service-1.0.0.jar`
+`ARTISTS=a,b SERVER_PORT=8080 SERVER_ADDRESS=localhost BUCKET_LIMITS=100 BUCKET_REFILL=1000000 java -jar service-1.0.2.jar`
 
 ## Запуск утилиты для стресс тестирования
 В качестве переменных сред утилита ожидает:
@@ -33,7 +33,7 @@
 Интерфейс комнадной строки соответствует заданию.
 Пример запуска на Linux:
 
-`ARTISTS=a,b java -jar service-perf-1.0.jar -n 1000 -c 10 localhost:8080`
+`ARTISTS=a,b java -jar service-perf-1.0.2.jar -n 1000 -c 10 localhost:8080`
 
 ## Запуск балансировщика
 В качестве переменных балансировщик ожидает:
@@ -44,7 +44,7 @@
 Интерфейс комнадной строки соответствует заданию.
 Пример запуска на Linux:
 
-`SERVER_ADDRESS=localhost SERVER_PORT=8085 SERVICES=localhost:8080,localhost:8081 java -jar balancer-1.0.0.jar`
+`SERVER_ADDRESS=localhost SERVER_PORT=8085 SERVICES=localhost:8080,localhost:8081 java -jar balancer-1.0.2.jar`
 
 
 # Особенности реализации
